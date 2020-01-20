@@ -1,23 +1,20 @@
 #encoding_utf-8
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
-from numba import Boolean
-from whoosh.fields import Schema
+from django.shortcuts import render, redirect
 from whoosh.fields import Schema, TEXT, BOOLEAN, NUMERIC
 from whoosh.index import open_dir
-from whoosh.query import Term, NumericRange
-
+from whoosh.query import Term, NumericRange, FuzzyTerm
 from main.models import Jugador, Noticia
-from main.forms import JugadorBusquedaForm
-from whoosh.qparser import QueryParser
+from main.forms import JugadorBusquedaForm, NoticiaBusquedaForm
+from django.contrib.auth import login as do_login
 
 
 dirindex = "IndexWhoosh"
 # Create your views here.
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'base.html')
 
 def ingresar(request):
     if request.user.is_authenticated:
@@ -38,6 +35,24 @@ def ingresar(request):
             return (HttpResponse('<html><body>ERROR: USUARIO O CONTARSE&Ntilde;A INCORRECTOS </body></html>'))
 
     return render(request, 'ingresar.html', {'formulario': formulario})
+
+def register(request):
+    form = UserCreationForm()
+    if request.method == "POST":
+        form = UserCreationForm(data=request.POST)
+        form.fields['username'].help_text = None
+        form.fields['password1'].help_text = None
+        form.fields['password2'].help_text = None
+        if form.is_valid():
+            user = form.save()
+
+            if user is not None:
+                do_login(request, user)
+
+                return redirect('/')
+
+
+    return render(request, "registration/register.html", {'form': form})
 
 
 def busqueda_jugador(request):
@@ -80,7 +95,7 @@ def busqueda_jugador(request):
 
             pos = formulario.cleaned_data['posicion']
             nac = formulario.cleaned_data['nacionalidad']
-            eq = formulario.cleaned_data['equipo']
+            eq = formulario.cleaned_data['equipos']
             ed = formulario.cleaned_data['edad']
             gol = formulario.cleaned_data['goles']
             part = formulario.cleaned_data['partidos']
@@ -98,7 +113,7 @@ def busqueda_jugador(request):
                     query = Term('nacionalidad', nac)
                     jugadores2 = searcher.search(query)
                 if eq:
-                    query = Term('equipo', eq)
+                    query = Term('equipos', eq)
                     jugadores3 = searcher.search(query)
                 if ed:
                     cons = ed.split()
@@ -160,4 +175,27 @@ def busqueda_jugador(request):
                          & jugadores6 & jugadores7 & jugadores8 & jugadores9
 
     return render(request, 'busqueda_jugadores.html',
-                  {'formulario': formulario, 'jugadores': jugadores})
+                  {'form': formulario, 'jugadores': jugadores})
+
+
+def busqueda_noticia(request):
+    noticias = Noticia.objects.all()
+    if request.method == 'POST':
+        form = NoticiaBusquedaForm(request.POST)
+        if form.is_valid():
+            keywords = form.cleaned_data['keywords']
+
+            ix = open_dir(dirindex)
+            with ix.searcher() as searcher:
+
+                temas = keywords.split()
+
+                for x in temas:
+                    query = FuzzyTerm('titulo', x)
+                    #Si no funciona bien, hacerlo con Term
+                    noticias = noticias & searcher.search(query)
+
+    else:
+        form = NoticiaBusquedaForm()
+
+    return render(request, 'busqueda_noticias.html', {'form': form, 'noticias':noticias})

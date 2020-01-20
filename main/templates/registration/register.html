@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="h3 mb-3 font-weight-normal">Por favor registrese</h1>
+<form class="form-signin" method="post">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Registrar</button>
+</form>
+
+<a href="/login">Iniciar sesión</a>
+{%endblock %}

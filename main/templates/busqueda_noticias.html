@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="h3 mb-3 font-weight-normal">Búsqueda de noticias</h1>
+<p class="h3 mb-3 font-weight-normal">¿Quiere enterarse de las últimas noticias que le interesen? ¡Busque los temas que le interesen!</p>
+
+<form class="form-signin" method="post">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Buscar</button>
+</form>
+
+{% for j in noticias%}
+        <ul>
+			<li>Titular: {{n.titulo}}</li>
+            <li>Descripción: {{j.descripcion}}</li>
+            <li>Imagen: {{n.imagen}}</li>
+            <li>Enlace: {{n.enlace}}</li>
+
+            <br>
+		</ul>
+{% endfor %}
+{%endblock %}

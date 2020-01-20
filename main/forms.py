@@ -4,15 +4,15 @@ from django import forms
 
 
 class JugadorBusquedaForm(forms.Form):
-    posicion = forms.CharField(label="Posicion", widget=forms.TextInput)
-    nacionalidad = forms.CharField(label="Nacionalidad", widget=forms.TextInput)
-    equipo = forms.CharField(label="Equipo", widget=forms.TextInput)
-    edad = forms.CharField(label="Edad", widget=forms.TextInput)
-    goles = forms.CharField(label="Goles", widget=forms.TextInput)
-    partidos = forms.CharField(label="Partidos jugados", widget=forms.TextInput)
-    amarillas = forms.CharField(label="Tarjetas amarillas", widget=forms.TextInput)
-    rojas = forms.CharField(label="Tarjetas rojas", widget=forms.TextInput)
-    lesionado = forms.CharField(label="Lesionado", widget=forms.NullBooleanSelect)
+    posicion = forms.CharField(label="Posicion", widget=forms.TextInput, required=False)
+    nacionalidad = forms.CharField(label="Nacionalidad", widget=forms.TextInput, required=False)
+    equipos = forms.CharField(label="Equipo", widget=forms.TextInput, required=False)
+    edad = forms.CharField(label="Edad", widget=forms.TextInput, required=False)
+    goles = forms.CharField(label="Goles", widget=forms.TextInput, required=False)
+    partidos = forms.CharField(label="Partidos jugados", widget=forms.TextInput, required=False)
+    amarillas = forms.CharField(label="Tarjetas amarillas", widget=forms.TextInput, required=False)
+    rojas = forms.CharField(label="Tarjetas rojas", widget=forms.TextInput, required=False)
+    lesionado = forms.CharField(label="Lesionado", widget=forms.NullBooleanSelect, required=False)
 
 
 class NoticiaBusquedaForm(forms.Form):

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="h3 mb-3 font-weight-normal">Búsqueda de jugadores</h1>
+<p class="h3 mb-3 font-weight-normal">¿Siente curiosidad por los jugadores de la liga? ¡Busque en el buscador definitivo
+de jugadores de la liga que le apetezca!</p>
+
+<form class="form-signin" method="post">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Buscar</button>
+</form>
+
+{% for j in jugadores%}
+        <ul>
+			<li>Nombre del jugador: {{j.nombre}}</li>
+            <li>Equipo: {{j.equipos}}</li>
+            <li>Edad: {{j.edad}}</li>
+            <li>Nacionalidad: {{j.nacionalidad}}</li>
+            <li>Posición: {{j.posicion}}</li>
+            <li>Partidos Jugados: {{j.partidos_jugados}}</li>
+            <li>Goles: {{j.goles}}</li>
+            <li>Tarjetas Amarillas: {{j.tarjetas_amarillas}}</li>
+            <li>Tarjetas Rojas: {{j.tarjetas_rojas}}</li>
+            <li>Lesionado: {{j.lesionado}}</li>
+            <br>
+		</ul>
+{% endfor %}
+{%endblock %}
