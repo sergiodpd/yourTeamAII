@@ -27,7 +27,60 @@ def get_schema():
                       nombre=TEXT(Stored=True),
                       partidosJugados=NUMERIC(Stored=True),
                       nacionalidad=TEXT(True))
-    
+def get_schemaNot():
+        return Schema(titulo=TEXT(stored=True),
+                      enlace=TEXT(stored=True))
+
+def extract_notices():
+
+    saved_notices = []
+    equipos = ['barcelona','real-madrid','atletico','sevilla','getafe',
+          'real-sociedad','valencia','athletic','villarreal','granada',
+          'betis','levante','osasuna','alaves','valladolid',
+          'eibar','mallorca','celta','leganes','espanyol']
+
+
+    for e in equipos:
+        url = 'https://www.marca.com/futbol/'+e +'.html?intcmp=MENUESCU&s_kw='+e
+        response = requests.get(url)
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+
+        l =soup.find_all("h3", class_ =["mod-title"])
+
+        notices = list()
+        enlaces = list()
+
+
+        notice =  []
+        for i in l:
+
+
+            notices.append(i.a.get('title'))
+            enlaces.append(i.a.get('href'))  
+
+        notice.append(notices)
+        notice.append(enlaces) 
+        saved_notices.append(notice)    
+    return saved_notices
+
+def create_notices_index(dir_index, notice):
+    if not os.path.exists(dir_index):
+        os.mkdir(dir_index)
+
+    ind = create_in(dir_index, schema=get_news_schema())
+    writer = ind.writer()
+
+    for notic in notice:
+        titulo = notic[0]
+        enlace = notic[1]
+
+        writer.add_document(titulo=str(titulo), enlace=str(enlace))
+
+    writer.commit()
+    messagebox.showinfo("Succes",
+                        "Index created correctly, " + str(len(notice)) + " notices saved") 
     
 def extract_players():
     
