@@ -143,9 +143,9 @@ def create_players_index(dir_index, players):
         nombre = player[5]
         partidosJugados = player[6]
         nacionalidad = player[7]
-        writer.add_document(edad=edad, equipo=str(equipo), goles=goles,
-                            tarjetasAmarillas=tarjetasAmarillas, tarjetasRojas=tarjetasRojas,
-                            nombre=str(nombre), partidosJugaods=partidosJugados, nacionalidad=str(nacionalidad))
+        writer.add_document(edad=edad, equipos=str(equipo), goles=goles,
+                            tarjetas_amarillas=tarjetasAmarillas, tarjetas_rojas=tarjetasRojas,
+                            nombre=str(nombre), partidos_jugaods=partidosJugados, nacionalidad=str(nacionalidad))
 
     writer.commit()
     messagebox.showinfo("Succes",
@@ -162,9 +162,9 @@ def populate_players():
         nombre = player[5]
         partidosJugados = player[6]
         nacionalidad = player[7]
-        player = Jugador(edad=edad, equipo=equipo, goles=goles,
-                            tarjetasAmarillas=tarjetasAmarillas, tarjetasRojas=tarjetasRojas,
-                            nombre=nombre, partidosJugaods=partidosJugados, nacionalidad=nacionalidad) 
+        player = Jugador(edad=int(edad), equipos=equipo, goles=int(goles),
+                            tarjetas_amarillas=int(tarjetasAmarillas), tarjetas_rojas=int(tarjetasRojas),
+                            nombre=nombre, partidos_jugados=int(partidosJugados), nacionalidad=nacionalidad)
         player.save()
     
 
