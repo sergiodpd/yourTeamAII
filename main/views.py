@@ -78,6 +78,9 @@ def create_notices_index(dir_index, notice):
 
     writer.commit()
 
+def populate_notices():
+    notices = extract_notices()
+    Noticia.objects.bulk_create(notices)
     
 def extract_players():
     
@@ -152,6 +155,7 @@ def populate_players():
     players = extract_players()
     Jugador.objects.bulk_create(players)
     
+
 def ingresar(request):
     if request.user.is_authenticated:
         return (HttpResponseRedirect('/index'))
