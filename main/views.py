@@ -155,6 +155,14 @@ def populate_players():
     players = extract_players()
     for player in players:
         edad = player[0]
+        if player[5]=='Larrazabal Gaizka':
+            edad = 22
+        if player[5]=='Vidal Nacho':
+            edad = 24    
+        if player[5]=='Kike':
+            edad = 22
+        if player[5]=='Atienza Miguel':
+            edad = 20    
         equipo = player[1]
         goles = player[2]
         tarjetasAmarillas = player[3]
