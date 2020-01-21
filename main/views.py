@@ -9,6 +9,8 @@ from whoosh.query import Term, NumericRange, FuzzyTerm
 from main.models import Jugador, Noticia
 from main.forms import JugadorBusquedaForm, NoticiaBusquedaForm
 from django.contrib.auth import login as do_login
+import requests
+from bs4 import BeautifulSoup
 
 
 dirindex = "IndexWhoosh"
@@ -16,6 +18,88 @@ dirindex = "IndexWhoosh"
 def index(request):
     return render(request, 'base.html')
 
+def get_schema():
+        return Schema(edad=NUMERIC(stored=True),
+                      equipo=TEXT(stored=True),
+                      goles=NUMERIC(stored=True),
+                      tarjetasAmarillas=NUMERIC(stored=True),
+                      tarjetasRojas=NUMERIC(Stored=True),
+                      nombre=TEXT(Stored=True),
+                      partidosJugados=NUMERIC(Stored=True),
+                      nacionalidad=TEXT(True))
+    
+    
+def extract_players():
+    
+    saved_players = []
+    urlist = ['fc-barcelona/SKbpVP5K','real-madrid/W8mj7MDD','atletico-madrid/jaarqpLQ','sevilla/h8oAv4Ts','getafe-cf/dboeiWOt',
+          'real-sociedad/jNvak2f3','valencia-cf/CQeaytrD','athletic-club/IP5zl0cJ','villarreal-cf/lUatW5jE','granada/EXuxl1xP',
+          'real-betis/vJbTeCGP','levante-ud/G8FL0ShI','ca-osasuna/ETdxjU8a','alaves/hxt57t2q','real-valladolid-cf/zkpajjvm',
+          'eibar/OEsEpExD','rcd-mallorca/4jDQxrbf','celta-vigo/8pvUZFhf','leganes/Mi0rXQg7','rcd-espanyol/QFfPdh1J']
+
+    equipos = ['FC Barcelona', 'Real Madrid CdF', 'Atlético de Madrid', 'Sevilla F.C', 'Getafe CdF', 'Real Sociedad de Futbol', 'Valencia CdF', 'Athletic Club', 'Villareal CdF', 'Granada CdF',
+               'Real Betis Balompie', 'Levante UD', 'CA Osasuna', 'Deportivo Alavés', 'Real Valladolid CdF' , 'SD Eibar', 'RCD Mallorca', 'RC Celta de Vigo', 'CD Leganés', 'RCD Espanñol']
+
+    numequipo = 0
+    for u in urlist:
+        url = 'https://www.mismarcadores.com/equipo/' + u + '/plantilla'
+        print(url)
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        l2 =soup.find("div", {"id": "overall-all-table"})
+        l3 = l2.find_all("div", {"class": "profileTable__row profileTable__row--between profileTable__row--soccer"})
+        l4 = l2.find_all("div", {"profileTable__row profileTable__row--between profileTable__row--soccer even"})
+        l5 = l3 + l4
+        equipo = equipos[numequipo]
+        print(equipo)
+        for l in l5:
+            player =  []
+            dorsal = l.div.div.text
+            nacionalidad = l.div.div.find_next_sibling("div").span.get('title')
+            nombre = l.div.div.find_next_sibling("div").div.a.text
+            edad = l.div.find_next_sibling("div").div.text
+            partidosJugados = l.div.find_next_sibling("div").div.find_next_sibling("div").text
+            goles = l.div.find_next_sibling("div").div.find_next_sibling("div").find_next_sibling("div").text
+            tarjetasAmarillas = l.div.find_next_sibling("div").div.find_next_sibling("div").find_next_sibling("div").find_next_sibling("div").text
+            tarjetasRojas = l.div.find_next_sibling("div").div.find_next_sibling("div").find_next_sibling("div").find_next_sibling("div").find_next_sibling("div").text
+            equipojug = equipo
+            player.append(edad)
+            player.append(equipo)
+            player.append(goles)
+            player.append(tarjetasAmarillas)
+            player.append(tarjetasRojas)
+            player.append(nombre)
+            player.append(partidosJugados)
+            player.append(nacionalidad)
+            saved_players.append(player)
+        numequipo = numequipo + 1    
+    
+    return saved_players
+    
+def create_players_index(dir_index, players):
+    if not os.path.exists(dir_index):
+        os.mkdir(dir_index)
+
+    ind = create_in(dir_index, schema=get_news_schema())
+    writer = ind.writer()
+
+    for player in players:
+        edad = player[0]
+        equipo = player[1]
+        goles = player[2]
+        tarjetasAmarillas = player[3]
+        tarjetasRojas = player[4]
+        nombre = player[5]
+        partidosJugados = player[6]
+        nacionalidad = player[7]
+        writer.add_document(edad=edad, equipo=str(equipo), goles=goles,
+                            tarjetasAmarillas=tarjetasAmarillas, tarjetasRojas=tarjetasRojas,
+                            nombre=str(nombre), partidosJugaods=partidosJugados, nacionalidad=str(nacionalidad))
+
+    writer.commit()
+    messagebox.showinfo("Succes",
+                        "Index created correctly, " + str(len(players)) + " players saved")    
+    
 def ingresar(request):
     if request.user.is_authenticated:
         return (HttpResponseRedirect('/index'))
