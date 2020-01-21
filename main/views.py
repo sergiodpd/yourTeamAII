@@ -86,9 +86,9 @@ def extract_players():
     
     saved_players = []
     urlist = ['fc-barcelona/SKbpVP5K','real-madrid/W8mj7MDD','atletico-madrid/jaarqpLQ','sevilla/h8oAv4Ts','getafe-cf/dboeiWOt',
-          'real-sociedad/jNvak2f3','valencia-cf/CQeaytrD','athletic-club/IP5zl0cJ','villarreal-cf/lUatW5jE','granada/EXuxl1xP',
-          'real-betis/vJbTeCGP','levante-ud/G8FL0ShI','ca-osasuna/ETdxjU8a','alaves/hxt57t2q','real-valladolid-cf/zkpajjvm',
-          'eibar/OEsEpExD','rcd-mallorca/4jDQxrbf','celta-vigo/8pvUZFhf','leganes/Mi0rXQg7','rcd-espanyol/QFfPdh1J']
+              'real-sociedad/jNvak2f3','valencia-cf/CQeaytrD','athletic-club/IP5zl0cJ','villarreal-cf/lUatW5jE','granada/EXuxl1xP',
+              'real-betis/vJbTeCGP','levante-ud/G8FL0ShI','ca-osasuna/ETdxjU8a','alaves/hxt57t2q','real-valladolid-cf/zkpajjvm',
+              'eibar/OEsEpExD','rcd-mallorca/4jDQxrbf','celta-vigo/8pvUZFhf','leganes/Mi0rXQg7','rcd-espanyol/QFfPdh1J']
 
     equipos = ['FC Barcelona', 'Real Madrid CdF', 'Atlético de Madrid', 'Sevilla F.C', 'Getafe CdF', 'Real Sociedad de Futbol', 'Valencia CdF', 'Athletic Club', 'Villareal CdF', 'Granada CdF',
                'Real Betis Balompie', 'Levante UD', 'CA Osasuna', 'Deportivo Alavés', 'Real Valladolid CdF' , 'SD Eibar', 'RCD Mallorca', 'RC Celta de Vigo', 'CD Leganés', 'RCD Espanñol']
