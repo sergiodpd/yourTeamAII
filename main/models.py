@@ -16,8 +16,6 @@ class Usuario(models.Model):
 
 class Noticia(models.Model):
     titulo = models.CharField(max_length=25, default='', verbose_name='Título')
-    descripcion = models.TextField(default='', verbose_name='Descripción')
-    imagen = models.ImageField(verbose_name="Imagen")
     enlace = models.URLField(verbose_name='Enlace a la noticia')
     idNoticia = models.IntegerField(primary_key=True)
 

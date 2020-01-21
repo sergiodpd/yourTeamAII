@@ -1,10 +1,13 @@
 #encoding_utf-8
+import os
+from tkinter import messagebox
+
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from whoosh.fields import Schema, TEXT, BOOLEAN, NUMERIC
-from whoosh.index import open_dir
+from whoosh.index import open_dir, create_in
 from whoosh.query import Term, NumericRange, FuzzyTerm
 from main.models import Jugador, Noticia
 from main.forms import JugadorBusquedaForm, NoticiaBusquedaForm
@@ -27,12 +30,12 @@ def get_schema():
                       nombre=TEXT(Stored=True),
                       partidosJugados=NUMERIC(Stored=True),
                       nacionalidad=TEXT(True))
-def get_schemaNot():
+def get_news_schema():
         return Schema(titulo=TEXT(stored=True),
                       enlace=TEXT(stored=True))
 
-def extract_notices():
 
+def extract_notices():
     saved_notices = []
     equipos = ['barcelona','real-madrid','atletico','sevilla','getafe',
           'real-sociedad','valencia','athletic','villarreal','granada',
@@ -45,18 +48,13 @@ def extract_notices():
         response = requests.get(url)
 
         soup = BeautifulSoup(response.text, 'html.parser')
-
-
         l =soup.find_all("h3", class_ =["mod-title"])
 
         notices = list()
         enlaces = list()
 
-
         notice =  []
         for i in l:
-
-
             notices.append(i.a.get('title'))
             enlaces.append(i.a.get('href'))  
 
@@ -79,8 +77,7 @@ def create_notices_index(dir_index, notice):
         writer.add_document(titulo=str(titulo), enlace=str(enlace))
 
     writer.commit()
-    messagebox.showinfo("Succes",
-                        "Index created correctly, " + str(len(notice)) + " notices saved") 
+
     
 def extract_players():
     
@@ -96,7 +93,6 @@ def extract_players():
     numequipo = 0
     for u in urlist:
         url = 'https://www.mismarcadores.com/equipo/' + u + '/plantilla'
-        print(url)
         r = requests.get(url)
         soup = BeautifulSoup(r.text, 'html.parser')
         l2 =soup.find("div", {"id": "overall-all-table"})
@@ -104,9 +100,8 @@ def extract_players():
         l4 = l2.find_all("div", {"profileTable__row profileTable__row--between profileTable__row--soccer even"})
         l5 = l3 + l4
         equipo = equipos[numequipo]
-        print(equipo)
         for l in l5:
-            player =  []
+            player = []
             dorsal = l.div.div.text
             nacionalidad = l.div.div.find_next_sibling("div").span.get('title')
             nombre = l.div.div.find_next_sibling("div").div.a.text
@@ -197,6 +192,7 @@ def register(request):
 
 
 def busqueda_jugador(request):
+    populate_players()
     formulario = JugadorBusquedaForm()
     jugadores = None
     keyword1 = ''
@@ -204,18 +200,6 @@ def busqueda_jugador(request):
     keyword3 = ''
     keyword4 = ''
     keyword5 = ''
-
-    def get_schema():
-        return Schema(edad=NUMERIC(stored=True),
-                      posicion=TEXT(stored=True),
-                      equipo=TEXT(stored=True),
-                      goles=NUMERIC(stored=True),
-                      tarjetasAmarillas=NUMERIC(stored=True),
-                      tarjetasRojas=NUMERIC(Stored=True),
-                      nombre=TEXT(Stored=True),
-                      partidosJugados=NUMERIC(Stored=True),
-                      lesionado=BOOLEAN(Stored=True),
-                      nacionalidad=TEXT(True))
 
     if request.method == 'POST':
         formulario = JugadorBusquedaForm(request.POST)
@@ -320,6 +304,7 @@ def busqueda_jugador(request):
 
 
 def busqueda_noticia(request):
+    create_notices_index(dirindex, extract_notices)
     noticias = Noticia.objects.all()
     if request.method == 'POST':
         form = NoticiaBusquedaForm(request.POST)
