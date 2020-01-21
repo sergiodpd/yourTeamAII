@@ -153,7 +153,19 @@ def create_players_index(dir_index, players):
     
 def populate_players():
     players = extract_players()
-    Jugador.objects.bulk_create(players)
+    for player in players:
+        edad = player[0]
+        equipo = player[1]
+        goles = player[2]
+        tarjetasAmarillas = player[3]
+        tarjetasRojas = player[4]
+        nombre = player[5]
+        partidosJugados = player[6]
+        nacionalidad = player[7]
+        player = Jugador(edad=edad, equipo=equipo, goles=goles,
+                            tarjetasAmarillas=tarjetasAmarillas, tarjetasRojas=tarjetasRojas,
+                            nombre=nombre, partidosJugaods=partidosJugados, nacionalidad=nacionalidad) 
+        player.save()
     
 
 def ingresar(request):
