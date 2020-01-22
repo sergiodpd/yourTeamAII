@@ -50,17 +50,15 @@ def extract_notices():
         soup = BeautifulSoup(response.text, 'html.parser')
         l =soup.find_all("h3", class_ =["mod-title"])
 
-        notices = list()
-        enlaces = list()
-
-        notice =  []
+        
+        
         for i in l:
-            notices.append(i.a.get('title'))
-            enlaces.append(i.a.get('href'))  
-
-        notice.append(notices)
-        notice.append(enlaces) 
-        saved_notices.append(notice)    
+            notice =  []
+            title = i.a.get('title')
+            link = i.a.get('href')  
+            notice.append(title)
+            notice.append(link)
+            saved_notices.append(notice)    
     return saved_notices
 
 def create_notices_index(dir_index, notice):
@@ -80,7 +78,11 @@ def create_notices_index(dir_index, notice):
 
 def populate_notices():
     notices = extract_notices()
-    Noticia.objects.bulk_create(notices)
+    for notice in notices:
+        title = notice[0]
+        link = notice[1]
+        notice = Noticia(titulo=title, enlace=link)
+        notice.save()
     
 def extract_players():
     
@@ -331,7 +333,7 @@ def busqueda_jugador(request):
 
 
 def busqueda_noticia(request):
-    create_notices_index(dirindex, extract_notices)
+    form = NoticiaBusquedaForm()
     noticias = Noticia.objects.all()
     if request.method == 'POST':
         form = NoticiaBusquedaForm(request.POST)
