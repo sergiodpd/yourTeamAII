@@ -24,7 +24,7 @@ def index(request):
 def populate_database(request):
     populate_notices()
     populate_players()
-    return HttpResponseRedirect('/base.html')
+    return HttpResponseRedirect('/')
     
 def get_schema():
         return Schema(edad=NUMERIC(stored=True),
@@ -235,20 +235,16 @@ def register(request):
 
 def busqueda_jugador(request):
     formulario = JugadorBusquedaForm()
-    jugadores = None
-    keyword1 = ''
-    keyword2 = ''
-    keyword3 = ''
-    keyword4 = ''
-    keyword5 = ''
+    jugadores = []
+
 
     if request.method == 'POST':
         formulario = JugadorBusquedaForm(request.POST)
         if formulario.is_valid():
-            jugadores = Jugador.objects.all()
+            jugadores = list(Jugador.objects.all())
 
-            #Al inicializar todas las listas con todos los jugadores, en el caso de que alguno de los formularios no sea
-            #rellenado, a la hora de la intersecciÃ³n serÃ¡ como si no afectara
+            # Al inicializar todas las listas con todos los jugadores, en el caso de que alguno de los formularios no sea
+            # rellenado, a la hora de la intersección será como si no afectara
             jugadores1 = Jugador.objects.all()
             jugadores2 = Jugador.objects.all()
             jugadores3 = Jugador.objects.all()
@@ -259,7 +255,6 @@ def busqueda_jugador(request):
             jugadores8 = Jugador.objects.all()
             jugadores9 = Jugador.objects.all()
 
-            pos = formulario.cleaned_data['posicion']
             nac = formulario.cleaned_data['nacionalidad']
             eq = formulario.cleaned_data['equipos']
             ed = formulario.cleaned_data['edad']
@@ -267,75 +262,72 @@ def busqueda_jugador(request):
             part = formulario.cleaned_data['partidos']
             amar = formulario.cleaned_data['amarillas']
             roj = formulario.cleaned_data['rojas']
-            les = formulario.cleaned_data['lesionado']
 
-            ix = open_dir(dirindex)
-            with ix.searcher() as searcher:
-                #Para c0omprobar si la posiciÃ³n estÃ¡ vacÃ­a
-                if pos!="":
-                    query = Term('posicion', pos)
-                    jugadores1 = searcher.search(query)
-                if nac!="":
-                    query = Term('nacionalidad', nac)
-                    jugadores2 = searcher.search(query)
-                if eq!="":
-                    query = Term('equipos', eq)
-                    jugadores3 = searcher.search(query)
-                if ed!="":
-                    cons = ed.split()
-                    #Tiene que ser de la forma "menos/mÃ¡s de X" o "X"
-                    if cons[0]=='mÃ¡s':
-                        query = NumericRange('edad', int(cons[2])+1, 100)
-                    elif cons[0]=='menos':
-                        query = NumericRange('edad', 10, int(cons[2])-1)
-                    elif int(cons[0])>1:
-                        query = NumericRange('edad', int(cons[2]), int(cons[2]))
-                    jugadores4 = searcher.search(query)
+            if nac != "":
+                jugadores2=Jugador.objects.filter(nacionalidad=nac)
+                jugadores = list(set(jugadores) & set(jugadores2))
 
-                if gol!="":
-                    # Tiene que ser de la forma "menos/mÃ¡s de X" o "X"
-                    if cons[0] == 'mÃ¡s':
-                        query = NumericRange('goles', int(cons[2]) + 1, 2000)
-                    elif cons[0] == 'menos':
-                        query = NumericRange('goles', 0, int(cons[2]) - 1)
-                    elif int(cons[0]) > 1:
-                        query = NumericRange('goles', int(cons[2]), int(cons[2]))
-                    jugadores5 = searcher.search(query)
+            if eq != "":
+                jugadores3 = Jugador.objects.filter(equipos__contains=eq)
+                jugadores = list(set(jugadores) & set(jugadores3))
 
-                if part!="":
-                    # Tiene que ser de la forma "menos/mÃ¡s de X" o "X"
-                    if cons[0] == 'mÃ¡s':
-                        query = NumericRange('partidosJugados', int(cons[2]) + 1, 20000)
-                    elif cons[0] == 'menos':
-                        query = NumericRange('partidosJugados', 0, int(cons[2]) - 1)
-                    elif int(cons[0]) > 1:
-                        query = NumericRange('partidosJugados', int(cons[2]), int(cons[2]))
-                    jugadores6 = searcher.search(query)
+            if ed != "":
+                cons = ed.split()
+                # Tiene que ser de la forma "menos/más de X" o "X"
+                if cons[0] == 'más':
+                    jugadores4=Jugador.objects.filter(edad__gte=cons[2])
 
-                if amar!="":
-                    # Tiene que ser de la forma "menos/mÃ¡s de X" o "X"
-                    if cons[0] == 'mÃ¡s':
-                        query = NumericRange('tarjetasAmarillas', int(cons[2]) + 1, 2000)
-                    elif cons[0] == 'menos':
-                        query = NumericRange('tarjetasAmarillas', 0, int(cons[2]) - 1)
-                    elif int(cons[0]) > 1:
-                        query = NumericRange('tarjetasAmarillas', int(cons[2]), int(cons[2]))
-                    jugadores7 = searcher.search(query)
+                elif cons[0] == 'menos':
+                    jugadores4 = Jugador.objects.filter(edad__lte=cons[2])
 
-                if part!="":
-                    # Tiene que ser de la forma "menos/mÃ¡s de X" o "X"
-                    if cons[0] == 'mÃ¡s':
-                        query = NumericRange('tarjetasRojas', int(cons[2]) + 1, 2000)
-                    elif cons[0] == 'menos':
-                        query = NumericRange('tarjetasRojas', 0, int(cons[2]) - 1)
-                    elif int(cons[0]) > 1:
-                        query = NumericRange('tarjetasRojas', int(cons[2]), int(cons[2]))
-                    jugadores8 = searcher.search(query)
+                else:
+                    jugadores4 = Jugador.objects.filter(edad=ed)
+                jugadores = list(set(jugadores) & set(jugadores4))
 
-                
+            if gol != "":
+                cons = gol.split()
+                # Tiene que ser de la forma "menos/más de X" o "X"
+                if cons[0] == 'más':
+                    jugadores5=Jugador.objects.filter(goles__gte=cons[2])
+                elif cons[0] == 'menos':
+                    jugadores5=Jugador.objects.filter(goles__lte=cons[2])
+                elif int(cons[0]) > 1:
+                    jugadores5=Jugador.objects.filter(goles=gol)
+                jugadores = list(set(jugadores) & set(jugadores5))
 
-                jugadores = jugadores1 & jugadores2 & jugadores3 & jugadores4 & jugadores5 \
-                         & jugadores6 & jugadores7 & jugadores8 & jugadores9
+            if part != "":
+                cons = part.split()
+                # Tiene que ser de la forma "menos/más de X" o "X"
+                if cons[0] == 'más':
+                    jugadores6=Jugador.objects.filter(partidos_jugados__gte=cons[2])
+                elif cons[0] == 'menos':
+                    jugadores6=Jugador.objects.filter(partidos_jugados__lte=cons[2])
+                elif int(cons[0]) > 1:
+                    jugadores6=Jugador.objects.filter(partidos_jugados=part)
+                jugadores = list(set(jugadores) & set(jugadores6))
+
+            if amar != "":
+                cons = amar.split()
+                    # Tiene que ser de la forma "menos/más de X" o "X"
+                if cons[0] == 'más':
+                    jugadores7=Jugador.objects.filter(tarjetas_amarillas__gte=cons[2])
+                elif cons[0] == 'menos':
+                    jugadores7=Jugador.objects.filter(tarjetas_amarillas__lte=cons[2])
+                elif int(cons[0]) > 1:
+                    jugadores7=Jugador.objects.filter(tarjetas_amarillas=amar)
+                jugadores = list(set(jugadores) & set(jugadores7))
+
+            if roj != "":
+                cons=roj.split()
+                # Tiene que ser de la forma "menos/más de X" o "X"
+                if cons[0] == 'más':
+                    jugadores8=Jugador.objects.filter(tarjetas_rojas__gte=cons[2])
+                elif cons[0] == 'menos':
+                    jugadores8=Jugador.objects.filter(tarjetas_rojas__lte=cons[2])
+                elif int(cons[0]) > 1:
+                    jugadores8=Jugador.objects.filter(tarjetas_rojas=roj)
+                jugadores = list(set(jugadores) & set(jugadores8))
+
 
     return render(request, 'busqueda_jugadores.html',
                   {'form': formulario, 'jugadores': jugadores})

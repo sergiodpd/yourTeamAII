@@ -8,7 +8,6 @@ class Usuario(models.Model):
     usuario = models.CharField(max_length=25, default='', unique=True, verbose_name='Nombre de usuario')
     password = models.CharField(max_length=20, default='', verbose_name='Contraseña')
     idUsuario = models.IntegerField(primary_key=True)
-    keywords = models.TextField()
 
     def __str__(self):
         return self.usuario
@@ -32,7 +31,6 @@ class Jugador(models.Model):
                (16, 'Real Sociedad'), (17, 'Real Valladolid'), (18, 'Sevilla FC'), (19, 'Valencia CF'), (20, 'Villarreal CF'))
 
     nombre = models.CharField(max_length=25, default='', verbose_name='Nombre')
-    posicion = models.CharField(max_length=25, default='', verbose_name='Posición', choices=POSICIONES)
     edad = models.IntegerField(verbose_name='Edad')
     goles = models.IntegerField(verbose_name='Goles')
     tarjetas_amarillas = models.IntegerField(verbose_name='Tarjetas Amarillas')
@@ -41,7 +39,6 @@ class Jugador(models.Model):
     nacionalidad = models.CharField(max_length=25, default='', verbose_name='Nacionalidad')
     partidos_jugados = models.IntegerField(verbose_name='Partidos Jugados')
     idJugador = models.IntegerField(primary_key=True)
-    lesionado = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nombre
