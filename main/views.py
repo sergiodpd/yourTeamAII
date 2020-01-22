@@ -143,9 +143,9 @@ def create_players_index(dir_index, players):
         nombre = player[5]
         partidosJugados = player[6]
         nacionalidad = player[7]
-        writer.add_document(edad=edad, equipos=str(equipo), goles=goles,
-                            tarjetas_amarillas=tarjetasAmarillas, tarjetas_rojas=tarjetasRojas,
-                            nombre=str(nombre), partidos_jugaods=partidosJugados, nacionalidad=str(nacionalidad))
+        writer.add_document(edad=edad, equipo=str(equipo), goles=goles,
+                            tarjetasAmarillas=tarjetasAmarillas, tarjetasRojas=tarjetasRojas,
+                            nombre=str(nombre), partidosJugaods=partidosJugados, nacionalidad=str(nacionalidad))
 
     writer.commit()
     messagebox.showinfo("Succes",
@@ -154,15 +154,7 @@ def create_players_index(dir_index, players):
 def populate_players():
     players = extract_players()
     for player in players:
-        edad = player[0]
-        if player[5]=='Larrazabal Gaizka':
-            edad = 22
-        if player[5]=='Vidal Nacho':
-            edad = 24    
-        if player[5]=='Kike':
-            edad = 22
-        if player[5]=='Atienza Miguel':
-            edad = 20    
+        edad = player[0]  
         equipo = player[1]
         goles = player[2]
         tarjetasAmarillas = player[3]
@@ -170,6 +162,21 @@ def populate_players():
         nombre = player[5]
         partidosJugados = player[6]
         nacionalidad = player[7]
+        
+        if edad == '?':
+            edad = 24
+            
+        if goles == '':
+            goles = 0
+            
+        if partidosJugados == '':
+            partidosJugados = 0	
+            
+        if tarjetasAmarillas == '':
+            tarjetasAmarillas = 0
+            
+        if tarjetasRojas == '':
+            tarjetasRojas = 0
         player = Jugador(edad=int(edad), equipos=equipo, goles=int(goles),
                             tarjetas_amarillas=int(tarjetasAmarillas), tarjetas_rojas=int(tarjetasRojas),
                             nombre=nombre, partidos_jugados=int(partidosJugados), nacionalidad=nacionalidad)
@@ -216,7 +223,6 @@ def register(request):
 
 
 def busqueda_jugador(request):
-    populate_players()
     formulario = JugadorBusquedaForm()
     jugadores = None
     keyword1 = ''
@@ -254,17 +260,17 @@ def busqueda_jugador(request):
 
             ix = open_dir(dirindex)
             with ix.searcher() as searcher:
-                #Para comprobar si la posición está vacía
-                if pos:
+                #Para c0omprobar si la posición está vacía
+                if pos!="":
                     query = Term('posicion', pos)
                     jugadores1 = searcher.search(query)
-                if nac:
+                if nac!="":
                     query = Term('nacionalidad', nac)
                     jugadores2 = searcher.search(query)
-                if eq:
+                if eq!="":
                     query = Term('equipos', eq)
                     jugadores3 = searcher.search(query)
-                if ed:
+                if ed!="":
                     cons = ed.split()
                     #Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0]=='más':
@@ -275,7 +281,7 @@ def busqueda_jugador(request):
                         query = NumericRange('edad', int(cons[2]), int(cons[2]))
                     jugadores4 = searcher.search(query)
 
-                if gol:
+                if gol!="":
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('goles', int(cons[2]) + 1, 2000)
@@ -285,7 +291,7 @@ def busqueda_jugador(request):
                         query = NumericRange('goles', int(cons[2]), int(cons[2]))
                     jugadores5 = searcher.search(query)
 
-                if part:
+                if part!="":
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('partidosJugados', int(cons[2]) + 1, 20000)
@@ -295,7 +301,7 @@ def busqueda_jugador(request):
                         query = NumericRange('partidosJugados', int(cons[2]), int(cons[2]))
                     jugadores6 = searcher.search(query)
 
-                if amar:
+                if amar!="":
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('tarjetasAmarillas', int(cons[2]) + 1, 2000)
@@ -305,7 +311,7 @@ def busqueda_jugador(request):
                         query = NumericRange('tarjetasAmarillas', int(cons[2]), int(cons[2]))
                     jugadores7 = searcher.search(query)
 
-                if part:
+                if part!="":
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('tarjetasRojas', int(cons[2]) + 1, 2000)
@@ -315,10 +321,7 @@ def busqueda_jugador(request):
                         query = NumericRange('tarjetasRojas', int(cons[2]), int(cons[2]))
                     jugadores8 = searcher.search(query)
 
-                if les:
-                    lesion = les=='True'
-
-                    jugadores9 = Jugador.objects.filter('lesionado'==lesion)
+                
 
                 jugadores = jugadores1 & jugadores2 & jugadores3 & jugadores4 & jugadores5 \
                          & jugadores6 & jugadores7 & jugadores8 & jugadores9
