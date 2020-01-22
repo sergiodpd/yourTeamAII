@@ -25,4 +25,5 @@ urlpatterns = [
     path('accounts/register', views.register),
     path('jugadores/search', views.busqueda_jugador, name='busca-jugadores'),
     path('noticias/search', views.busqueda_noticia, name='busca-noticias'),
+    path('populate/', views.populate_database, name='populate'),
 ]
