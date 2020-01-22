@@ -50,15 +50,17 @@ def extract_notices():
         soup = BeautifulSoup(response.text, 'html.parser')
         l =soup.find_all("h3", class_ =["mod-title"])
 
-        
-        
+        notices = list()
+        enlaces = list()
+
+        notice =  []
         for i in l:
-            notice =  []
-            title = i.a.get('title')
-            link = i.a.get('href')  
-            notice.append(title)
-            notice.append(link)
-            saved_notices.append(notice)    
+            notices.append(i.a.get('title'))
+            enlaces.append(i.a.get('href'))  
+
+        notice.append(notices)
+        notice.append(enlaces) 
+        saved_notices.append(notice)    
     return saved_notices
 
 def create_notices_index(dir_index, notice):
@@ -78,11 +80,7 @@ def create_notices_index(dir_index, notice):
 
 def populate_notices():
     notices = extract_notices()
-    for notice in notices:
-        title = notice[0]
-        link = notice[1]
-        notice = Noticia(titulo=title, enlace=link)
-        notice.save()
+    Noticia.objects.bulk_create(notices)
     
 def extract_players():
     
@@ -155,34 +153,7 @@ def create_players_index(dir_index, players):
     
 def populate_players():
     players = extract_players()
-    for player in players:
-        edad = player[0]  
-        equipo = player[1]
-        goles = player[2]
-        tarjetasAmarillas = player[3]
-        tarjetasRojas = player[4]
-        nombre = player[5]
-        partidosJugados = player[6]
-        nacionalidad = player[7]
-        
-        if edad == '?':
-            edad = 24
-            
-        if goles == '':
-            goles = 0
-            
-        if partidosJugados == '':
-            partidosJugados = 0	
-            
-        if tarjetasAmarillas == '':
-            tarjetasAmarillas = 0
-            
-        if tarjetasRojas == '':
-            tarjetasRojas = 0
-        player = Jugador(edad=int(edad), equipos=equipo, goles=int(goles),
-                            tarjetas_amarillas=int(tarjetasAmarillas), tarjetas_rojas=int(tarjetasRojas),
-                            nombre=nombre, partidos_jugados=int(partidosJugados), nacionalidad=nacionalidad)
-        player.save()
+    Jugador.objects.bulk_create(players)
     
 
 def ingresar(request):
@@ -225,6 +196,7 @@ def register(request):
 
 
 def busqueda_jugador(request):
+    populate_players()
     formulario = JugadorBusquedaForm()
     jugadores = None
     keyword1 = ''
@@ -262,17 +234,17 @@ def busqueda_jugador(request):
 
             ix = open_dir(dirindex)
             with ix.searcher() as searcher:
-                #Para c0omprobar si la posición está vacía
-                if pos!="":
+                #Para comprobar si la posición está vacía
+                if pos:
                     query = Term('posicion', pos)
                     jugadores1 = searcher.search(query)
-                if nac!="":
+                if nac:
                     query = Term('nacionalidad', nac)
                     jugadores2 = searcher.search(query)
-                if eq!="":
+                if eq:
                     query = Term('equipos', eq)
                     jugadores3 = searcher.search(query)
-                if ed!="":
+                if ed:
                     cons = ed.split()
                     #Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0]=='más':
@@ -283,7 +255,7 @@ def busqueda_jugador(request):
                         query = NumericRange('edad', int(cons[2]), int(cons[2]))
                     jugadores4 = searcher.search(query)
 
-                if gol!="":
+                if gol:
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('goles', int(cons[2]) + 1, 2000)
@@ -293,7 +265,7 @@ def busqueda_jugador(request):
                         query = NumericRange('goles', int(cons[2]), int(cons[2]))
                     jugadores5 = searcher.search(query)
 
-                if part!="":
+                if part:
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('partidosJugados', int(cons[2]) + 1, 20000)
@@ -303,7 +275,7 @@ def busqueda_jugador(request):
                         query = NumericRange('partidosJugados', int(cons[2]), int(cons[2]))
                     jugadores6 = searcher.search(query)
 
-                if amar!="":
+                if amar:
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('tarjetasAmarillas', int(cons[2]) + 1, 2000)
@@ -313,7 +285,7 @@ def busqueda_jugador(request):
                         query = NumericRange('tarjetasAmarillas', int(cons[2]), int(cons[2]))
                     jugadores7 = searcher.search(query)
 
-                if part!="":
+                if part:
                     # Tiene que ser de la forma "menos/más de X" o "X"
                     if cons[0] == 'más':
                         query = NumericRange('tarjetasRojas', int(cons[2]) + 1, 2000)
@@ -323,7 +295,10 @@ def busqueda_jugador(request):
                         query = NumericRange('tarjetasRojas', int(cons[2]), int(cons[2]))
                     jugadores8 = searcher.search(query)
 
-                
+                if les:
+                    lesion = les=='True'
+
+                    jugadores9 = Jugador.objects.filter('lesionado'==lesion)
 
                 jugadores = jugadores1 & jugadores2 & jugadores3 & jugadores4 & jugadores5 \
                          & jugadores6 & jugadores7 & jugadores8 & jugadores9
@@ -333,7 +308,7 @@ def busqueda_jugador(request):
 
 
 def busqueda_noticia(request):
-    form = NoticiaBusquedaForm()
+    create_notices_index(dirindex, extract_notices)
     noticias = Noticia.objects.all()
     if request.method == 'POST':
         form = NoticiaBusquedaForm(request.POST)
